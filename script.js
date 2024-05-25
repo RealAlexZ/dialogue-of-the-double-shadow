@@ -58,6 +58,10 @@ const panners = sources.map(source => {
     });
 });
 
+// Set the audio context destination to support the maximum number of output channels
+audioCtx.destination.channelCount = audioCtx.destination.maxChannelCount;
+audioCtx.destination.channelCountMode = "explicit";
+
 // Get the audio element
 const audioElement = document.querySelector("audio");
 
