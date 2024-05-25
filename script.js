@@ -31,12 +31,12 @@ const rollOff = 10;
 
 // Create PannerNode for each sound source
 const sources = [
-    { positionX: posX-100, positionY: posY+200, positionZ: posZ }, // Channel 1
-    { positionX: posX-100, positionY: posY-200, positionZ: posZ }, // Channel 2
-    { positionX: posX+200, positionY: posY, positionZ: posZ }, // Channel 3
-    { positionX: posX+100, positionY: posY+200, positionZ: posZ }, // Channel 4
-    { positionX: posX+100, positionY: posY-200, positionZ: posZ }, // Channel 5
-    { positionX: posX-200, positionY: posY, positionZ: posZ } // Channel 6
+    { positionX: posX-500, positionY: posY+500, positionZ: posZ }, // Channel 1
+    { positionX: posX-500, positionY: posY-500, positionZ: posZ }, // Channel 2
+    { positionX: posX+1000, positionY: posY, positionZ: posZ }, // Channel 3
+    { positionX: posX+500, positionY: posY+500, positionZ: posZ }, // Channel 4
+    { positionX: posX+500, positionY: posY-500, positionZ: posZ }, // Channel 5
+    { positionX: posX-1000, positionY: posY, positionZ: posZ } // Channel 6
 ];
 
 const panners = sources.map(source => {
