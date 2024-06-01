@@ -1,3 +1,6 @@
+var masterGainNodeDoubleMaxGain = 0.20;
+var masterGainNodePremiereMaxGain = 0.40;
+
 // Create a context and listener
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
@@ -88,9 +91,10 @@ const panners = sources.map(source => {
     });
 });
 
-// Create GainNodes for each sound source and a master GainNode
+// Create GainNodes for each sound source and master GainNodes
 const gainNodes = sources.map(() => new GainNode(audioCtx));
-const masterGainNode = new GainNode(audioCtx);
+const masterGainNodeDouble = new GainNode(audioCtx, { gain: masterGainNodeDoubleMaxGain });
+const masterGainNodePremiere = new GainNode(audioCtx, { gain: masterGainNodePremiereMaxGain });
 
 // Set the audio context destination to support the maximum number of output channels
 audioCtx.destination.channelCount = audioCtx.destination.maxChannelCount;
@@ -104,13 +108,13 @@ const audioElementPremiere = document.getElementById("premiere");
 const trackDouble = audioCtx.createMediaElementSource(audioElementDouble);
 const trackPremiere = audioCtx.createMediaElementSource(audioElementPremiere);
 
-// Connect each panner node to its respective GainNode and then to the master GainNode and destination
+// Connect each panner node to its respective GainNode and then to the master GainNodes and destination
 panners.forEach((panner, index) => {
     if (index < 6) {
-        trackDouble.connect(panner).connect(gainNodes[index]).connect(masterGainNode).connect(audioCtx.destination);
+        trackDouble.connect(panner).connect(gainNodes[index]).connect(masterGainNodeDouble).connect(audioCtx.destination);
     } else {
         // Add a reverb placeholder effect?
-        trackPremiere.connect(panner).connect(gainNodes[index]).connect(masterGainNode).connect(audioCtx.destination);
+        trackPremiere.connect(panner).connect(gainNodes[index]).connect(masterGainNodePremiere).connect(audioCtx.destination);
     }
 });
 
@@ -164,7 +168,5 @@ gainNodes.forEach((gainNode, index) => {
     controlsContainer.appendChild(createSlider(`Source ${index + 1} Volume`, gainNode));
 });
 
-// I had to hard code this
-masterGainNodeMaxGain = 0.20;
-masterGainNode.gain.value = masterGainNodeMaxGain;
-controlsContainer.appendChild(createSlider("Master Volume", masterGainNode, 0., masterGainNodeMaxGain));
+controlsContainer.appendChild(createSlider("Double Master Volume", masterGainNodeDouble, 0., masterGainNodeDoubleMaxGain));
+controlsContainer.appendChild(createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain));
