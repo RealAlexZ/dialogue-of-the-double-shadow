@@ -53,7 +53,8 @@ const sources = [
     { positionX: posX + 1000, positionY: posY, positionZ: posZ }, // Channel 3
     { positionX: posX + 500, positionY: posY + 500, positionZ: posZ }, // Channel 4
     { positionX: posX + 500, positionY: posY - 500, positionZ: posZ }, // Channel 5
-    { positionX: posX - 1000, positionY: posY, positionZ: posZ } // Channel 6
+    { positionX: posX - 1000, positionY: posY, positionZ: posZ }, // Channel 6
+    { positionX: posX, positionY: posY, positionZ: posZ - 300 } // Channel 7 (premiere)
 ];
 
 sources.forEach(source => {
@@ -95,15 +96,22 @@ const masterGainNode = new GainNode(audioCtx);
 audioCtx.destination.channelCount = audioCtx.destination.maxChannelCount;
 audioCtx.destination.channelCountMode = "explicit";
 
-// Get the audio element
-const audioElement = document.querySelector("audio");
+// Get the audio elements
+const audioElementDouble = document.getElementById("double");
+const audioElementPremiere = document.getElementById("premiere");
 
-// Pass it into the audio context
-const track = audioCtx.createMediaElementSource(audioElement);
+// Pass them into the audio context
+const trackDouble = audioCtx.createMediaElementSource(audioElementDouble);
+const trackPremiere = audioCtx.createMediaElementSource(audioElementPremiere);
 
 // Connect each panner node to its respective GainNode and then to the master GainNode and destination
 panners.forEach((panner, index) => {
-    track.connect(panner).connect(gainNodes[index]).connect(masterGainNode).connect(audioCtx.destination);
+    if (index < 6) {
+        trackDouble.connect(panner).connect(gainNodes[index]).connect(masterGainNode).connect(audioCtx.destination);
+    } else {
+        // Add a reverb placeholder effect?
+        trackPremiere.connect(panner).connect(gainNodes[index]).connect(masterGainNode).connect(audioCtx.destination);
+    }
 });
 
 // Select our play button
@@ -116,12 +124,14 @@ function togglePlay() {
         audioCtx.resume();
     }
 
-    // Play or pause track depending on state
+    // Play or pause tracks depending on state
     if (playButton.dataset.playing === "false") {
-        audioElement.play();
+        audioElementDouble.play();
+        audioElementPremiere.play();
         playButton.dataset.playing = "true";
     } else if (playButton.dataset.playing === "true") {
-        audioElement.pause();
+        audioElementDouble.pause();
+        audioElementPremiere.pause();
         playButton.dataset.playing = "false";
     }
 }
@@ -155,6 +165,6 @@ gainNodes.forEach((gainNode, index) => {
 });
 
 // I had to hard code this
-masterGainNodeMaxGain = 0.20
-masterGainNode.gain.value = masterGainNodeMaxGain
+masterGainNodeMaxGain = 0.20;
+masterGainNode.gain.value = masterGainNodeMaxGain;
 controlsContainer.appendChild(createSlider("Master Volume", masterGainNode, 0., masterGainNodeMaxGain));
