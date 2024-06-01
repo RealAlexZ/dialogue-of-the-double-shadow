@@ -10,7 +10,7 @@ const posZ = 300;
 
 listener.positionX.value = posX;
 listener.positionY.value = posY;
-listener.positionZ.value = posZ - 5;
+listener.positionZ.value = posZ;
 
 // Default settings of the listener's orientation
 listener.forwardX.value = 0;
@@ -20,9 +20,26 @@ listener.upX.value = 0;
 listener.upY.value = 1;
 listener.upZ.value = 0;
 
+// Function to calculate orientation
+function calculateOrientation(listenerPos, sourcePos) {
+    const orientationX = listenerPos.x - sourcePos.x;
+    const orientationY = listenerPos.y - sourcePos.y;
+    const orientationZ = listenerPos.z - sourcePos.z;
+    
+    const length = Math.sqrt(orientationX ** 2 + orientationY ** 2 + orientationZ ** 2);
+    
+    return {
+        orientationX: orientationX / length,
+        orientationY: orientationY / length,
+        orientationZ: orientationZ / length
+    };
+}
+
+const listenerPos = { x: posX, y: posY, z: posZ };
+
 // Constants for panner properties
 const innerCone = 60;
-const outerCone = 90;
+const outerCone = 150;
 const outerGain = 0.3;
 const distanceModel = "linear";
 const maxDistance = 10000;
@@ -39,6 +56,18 @@ const sources = [
     { positionX: posX-1000, positionY: posY, positionZ: posZ } // Channel 6
 ];
 
+sources.forEach(source => {
+    const orientation = calculateOrientation(listenerPos, {
+        x: source.positionX,
+        y: source.positionY,
+        z: source.positionZ
+    });
+    
+    source.orientationX = orientation.orientationX;
+    source.orientationY = orientation.orientationY;
+    source.orientationZ = orientation.orientationZ;
+});
+
 const panners = sources.map(source => {
     return new PannerNode(audioCtx, {
         panningModel: "HRTF", // Using HRTF model
@@ -46,9 +75,9 @@ const panners = sources.map(source => {
         positionX: source.positionX,
         positionY: source.positionY,
         positionZ: source.positionZ,
-        orientationX: 0.0,
-        orientationY: 0.0,
-        orientationZ: -1.0,
+        orientationX: source.orientationX,
+        orientationY: source.orientationY,
+        orientationZ: source.orientationZ,
         refDistance,
         maxDistance,
         rolloffFactor: rollOff,
