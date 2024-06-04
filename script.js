@@ -41,8 +41,8 @@ function calculateOrientation(listenerPos, sourcePos) {
 const listenerPos = { x: posX, y: posY, z: posZ };
 
 // Constants for panner properties
-const innerCone = 30;
-const outerCone = 60;
+const innerCone = 60; // smaller, point source, go down to 2 degrees?
+const outerCone = 120;
 const outerGain = 0.3;
 const distanceModel = "linear";
 const maxDistance = 10000;
@@ -51,13 +51,13 @@ const rollOff = 10;
 
 // Create PannerNode for each sound source
 const sources = [
-    { positionX: posX - 500, positionY: posY + 500, positionZ: posZ }, // Channel 1
-    { positionX: posX - 500, positionY: posY - 500, positionZ: posZ }, // Channel 2
-    { positionX: posX + 1000, positionY: posY, positionZ: posZ }, // Channel 3
-    { positionX: posX + 500, positionY: posY + 500, positionZ: posZ }, // Channel 4
-    { positionX: posX + 500, positionY: posY - 500, positionZ: posZ }, // Channel 5
-    { positionX: posX - 1000, positionY: posY, positionZ: posZ }, // Channel 6
-    { positionX: posX, positionY: posY, positionZ: posZ - 300 } // Channel 7 (premiere)
+    { positionX: posX - 1, positionY: posY + 10, positionZ: posZ }, // Channel 1
+    { positionX: posX + 1, positionY: posY + 10, positionZ: posZ }, // Channel 2
+    { positionX: posX + 3, positionY: posY, positionZ: posZ }, // Channel 3
+    { positionX: posX + 1, positionY: posY - 10, positionZ: posZ }, // Channel 4
+    { positionX: posX - 1, positionY: posY - 10, positionZ: posZ }, // Channel 5
+    { positionX: posX - 3, positionY: posY, positionZ: posZ }, // Channel 6
+    { positionX: posX, positionY: posY, positionZ: posZ - 0.5 } // Channel 7 (premiere)
 ];
 
 sources.forEach(source => {
