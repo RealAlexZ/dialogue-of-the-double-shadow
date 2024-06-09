@@ -171,10 +171,12 @@ gainNodes.forEach((gainNode, index) => {
 controlsContainer.appendChild(createSlider("Double Master Volume", masterGainNodeDouble, 0., masterGainNodeDoubleMaxGain));
 controlsContainer.appendChild(createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain));
 
-
 // Get canvas element and context
 const canvas = document.getElementById('audioVisualizer');
 const ctx = canvas.getContext('2d');
+
+let dragging = false;
+let dragIndex = -1;
 
 // Function to draw the visualization
 function drawVisualization() {
@@ -201,6 +203,71 @@ function drawVisualization() {
     });
 }
 
+// Function to handle mousedown event
+function onMouseDown(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    sources.forEach((source, index) => {
+        const sx = centerX + (source.positionX - posX) * 50;
+        const sy = centerY + (source.positionY - posY) * 50;
+        if (Math.sqrt((x - sx) ** 2 + (y - sy) ** 2) < 8) {
+            dragging = true;
+            dragIndex = index;
+            canvas.classList.add('dragging');
+        }
+    });
+}
+
+// Function to handle mousemove event
+function onMouseMove(event) {
+    if (dragging && dragIndex > -1) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        sources[dragIndex].positionX = posX + (x - centerX) / 50;
+        sources[dragIndex].positionY = posY + (y - centerY) / 50;
+
+        const orientation = calculateOrientation(listenerPos, {
+            x: sources[dragIndex].positionX,
+            y: sources[dragIndex].positionY,
+            z: sources[dragIndex].positionZ
+        });
+
+        sources[dragIndex].orientationX = orientation.orientationX;
+        sources[dragIndex].orientationY = orientation.orientationY;
+        sources[dragIndex].orientationZ = orientation.orientationZ;
+
+        panners[dragIndex].positionX.value = sources[dragIndex].positionX;
+        panners[dragIndex].positionY.value = sources[dragIndex].positionY;
+        panners[dragIndex].positionZ.value = sources[dragIndex].positionZ;
+        panners[dragIndex].orientationX.value = sources[dragIndex].orientationX;
+        panners[dragIndex].orientationY.value = sources[dragIndex].orientationY;
+        panners[dragIndex].orientationZ.value = sources[dragIndex].orientationZ;
+
+        drawVisualization();
+    }
+}
+
+// Function to handle mouseup event
+function onMouseUp() {
+    dragging = false;
+    dragIndex = -1;
+    canvas.classList.remove('dragging');
+}
+
+// Add event listeners to canvas
+canvas.addEventListener('mousedown', onMouseDown);
+canvas.addEventListener('mousemove', onMouseMove);
+canvas.addEventListener('mouseup', onMouseUp);
+canvas.addEventListener('mouseout', onMouseUp);
+
 // Initial draw
 drawVisualization();
 
@@ -210,5 +277,3 @@ window.addEventListener('resize', () => {
     listener.positionY.value = window.innerHeight / 2;
     drawVisualization();
 });
-
-

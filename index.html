@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boulez Project Prototype</title>
+    <style>
+        #canvas-container {
+            position: relative;
+        }
+        canvas {
+            border: 1px solid #000000;
+            cursor: grab;
+        }
+        canvas.dragging {
+            cursor: grabbing;
+        }
+    </style>
 </head>
 <body>
     <audio id="double" src="audio/double.mp3"></audio>
@@ -11,9 +23,8 @@
     <button data-playing="false" role="switch">Play/Pause</button>
     <div id="controls"></div>
     <div id="canvas-container">
-        <canvas id="audioVisualizer" width="500" height="500" style="border:1px solid #000000;"></canvas>
+        <canvas id="audioVisualizer" width="500" height="500"></canvas>
     </div>
-    <!-- Include the JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
