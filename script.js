@@ -9,7 +9,7 @@ const listener = audioCtx.listener;
 // Set the listener's position
 const posX = window.innerWidth / 2;
 const posY = window.innerHeight / 2;
-const posZ = 300;
+const posZ = 0;
 
 listener.positionX.value = posX;
 listener.positionY.value = posY;
@@ -41,21 +41,21 @@ function calculateOrientation(listenerPos, sourcePos) {
 const listenerPos = { x: posX, y: posY, z: posZ };
 
 // Constants for panner properties
-const innerCone = 60; // smaller, point source, go down to 2 degrees?
-const outerCone = 120;
-const outerGain = 0.3;
-const distanceModel = "linear";
-const maxDistance = 10000;
-const refDistance = 1;
-const rollOff = 10;
+const innerCone = 2;
+const outerCone = 2;
+const outerGain = 0;
+const distanceModel = "inverse";
+const maxDistance = 40;
+const refDistance = 5;
+const rollOff = 3;
 
 // Create PannerNode for each sound source
 const sources = [
-    { positionX: posX - 1, positionY: posY + 10, positionZ: posZ }, // Channel 1
-    { positionX: posX + 1, positionY: posY + 10, positionZ: posZ }, // Channel 2
+    { positionX: posX - 0.1, positionY: posY + 3 , positionZ: posZ }, // Channel 1
+    { positionX: posX + 0.1, positionY: posY + 3, positionZ: posZ }, // Channel 2
     { positionX: posX + 3, positionY: posY, positionZ: posZ }, // Channel 3
-    { positionX: posX + 1, positionY: posY - 10, positionZ: posZ }, // Channel 4
-    { positionX: posX - 1, positionY: posY - 10, positionZ: posZ }, // Channel 5
+    { positionX: posX + 0.1, positionY: posY - 3, positionZ: posZ }, // Channel 4
+    { positionX: posX - 0.1, positionY: posY - 3, positionZ: posZ }, // Channel 5
     { positionX: posX - 3, positionY: posY, positionZ: posZ }, // Channel 6
     { positionX: posX, positionY: posY, positionZ: posZ - 0.5 } // Channel 7 (premiere)
 ];
@@ -170,3 +170,45 @@ gainNodes.forEach((gainNode, index) => {
 
 controlsContainer.appendChild(createSlider("Double Master Volume", masterGainNodeDouble, 0., masterGainNodeDoubleMaxGain));
 controlsContainer.appendChild(createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain));
+
+
+// Get canvas element and context
+const canvas = document.getElementById('audioVisualizer');
+const ctx = canvas.getContext('2d');
+
+// Function to draw the visualization
+function drawVisualization() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+    // Draw the listener at the center
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('Listener', centerX + 15, centerY);
+
+    // Draw each source
+    sources.forEach((source, index) => {
+        const x = centerX + (source.positionX - posX) * 50; // Scale for visualization
+        const y = centerY + (source.positionY - posY) * 50; // Scale for visualization
+        ctx.fillStyle = "rgb(0,200,0)";
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillText(`Source ${index + 1}`, x + 15, y);
+    });
+}
+
+// Initial draw
+drawVisualization();
+
+// Redraw visualization whenever window is resized to ensure positions are scaled correctly
+window.addEventListener('resize', () => {
+    listener.positionX.value = window.innerWidth / 2;
+    listener.positionY.value = window.innerHeight / 2;
+    drawVisualization();
+});
+
+
