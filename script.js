@@ -171,25 +171,28 @@ gainNodes.forEach((gainNode, index) => {
 controlsContainer.appendChild(createSlider("Double Master Volume", masterGainNodeDouble, 0., masterGainNodeDoubleMaxGain));
 controlsContainer.appendChild(createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain));
 
-// Get canvas element and context
-const canvas = document.getElementById('audioVisualizer');
-const ctx = canvas.getContext('2d');
+// Get canvas elements and contexts
+const canvasTop = document.getElementById('audioVisualizerTop');
+const ctxTop = canvasTop.getContext('2d');
+
+const canvasFront = document.getElementById('audioVisualizerFront');
+const ctxFront = canvasFront.getContext('2d');
 
 let dragging = false;
 let dragIndex = -1;
 
-// Function to draw the visualization
-function drawVisualization() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+// Function to draw the top view visualization
+function drawVisualizationTop() {
+    ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height); // Clear the canvas
 
     // Draw the listener at the center
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    ctx.fillStyle = 'red';
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillText('Listener', centerX + 15, centerY);
+    const centerX = canvasTop.width / 2;
+    const centerY = canvasTop.height / 2;
+    ctxTop.fillStyle = 'red';
+    ctxTop.beginPath();
+    ctxTop.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+    ctxTop.fill();
+    ctxTop.fillText('Listener', centerX + 15, centerY);
 
     // Draw each source
     sources.forEach((source, index) => {
@@ -199,30 +202,68 @@ function drawVisualization() {
         const relX = (source.positionX - posX).toFixed(2);
         const relY = (source.positionY - posY).toFixed(2);
         const relZ = (source.positionZ - posZ).toFixed(2);
-        ctx.fillStyle = "rgb(0,200,0)";
-        ctx.beginPath();
-        ctx.arc(x, y, 8, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillText(`Sourced ${index + 1}:`, x + 15, y);
-        ctx.fillText(`${relX}, ${relY}, ${relZ}`, x + 15, y + 10)
+        ctxTop.fillStyle = "rgb(0,200,0)";
+        ctxTop.beginPath();
+        ctxTop.arc(x, y, 8, 0, 2 * Math.PI);
+        ctxTop.fill();
+        ctxTop.fillText(`Source ${index + 1}:`, x + 15, y);
+        ctxTop.fillText(`${relX}, ${relY}, ${relZ}`, x + 15, y + 10);
+    });
+}
+
+// Function to draw the front view visualization
+function drawVisualizationFront() {
+    ctxFront.clearRect(0, 0, canvasFront.width, canvasFront.height); // Clear the canvas
+
+    // Draw the listener at the center
+    const centerX = canvasFront.width / 2;
+    const centerY = canvasFront.height / 2;
+    ctxFront.fillStyle = 'red';
+    ctxFront.beginPath();
+    ctxFront.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+    ctxFront.fill();
+    ctxFront.fillText('Listener', centerX + 15, centerY);
+
+    // Draw each source
+    sources.forEach((source, index) => {
+        const x = centerX + (source.positionX - posX) * 50; // Scale for visualization
+        const y = centerY + (source.positionZ - posZ) * 50; // Scale for visualization
+        // Display the relative x, z values
+        const relX = (source.positionX - posX).toFixed(2);
+        const relZ = (source.positionZ - posZ).toFixed(2);
+        ctxFront.fillStyle = "rgb(0,200,0)";
+        ctxFront.beginPath();
+        ctxFront.arc(x, y, 8, 0, 2 * Math.PI);
+        ctxFront.fill();
+        ctxFront.fillText(`Source ${index + 1}:`, x + 15, y);
+        ctxFront.fillText(`${relX}, 0, ${relZ}`, x + 15, y + 10);
     });
 }
 
 // Function to handle mousedown event
 function onMouseDown(event) {
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    const rectTop = canvasTop.getBoundingClientRect();
+    const xTop = event.clientX - rectTop.left;
+    const yTop = event.clientY - rectTop.top;
+    const centerXTop = canvasTop.width / 2;
+    const centerYTop = canvasTop.height / 2;
+
+    const rectFront = canvasFront.getBoundingClientRect();
+    const xFront = event.clientX - rectFront.left;
+    const yFront = event.clientY - rectFront.top;
+    const centerXFront = canvasFront.width / 2;
+    const centerYFront = canvasFront.height / 2;
 
     sources.forEach((source, index) => {
-        const sx = centerX + (source.positionX - posX) * 50;
-        const sy = centerY + (source.positionY - posY) * 50;
-        if (Math.sqrt((x - sx) ** 2 + (y - sy) ** 2) < 8) {
+        const sxTop = centerXTop + (source.positionX - posX) * 50;
+        const syTop = centerYTop + (source.positionY - posY) * 50;
+        const sxFront = centerXFront + (source.positionX - posX) * 50;
+        const syFront = centerYFront + (source.positionZ - posZ) * 50;
+        if (Math.sqrt((xTop - sxTop) ** 2 + (yTop - syTop) ** 2) < 8 || Math.sqrt((xFront - sxFront) ** 2 + (yFront - syFront) ** 2) < 8) {
             dragging = true;
             dragIndex = index;
-            canvas.classList.add('dragging');
+            canvasTop.classList.add('dragging');
+            canvasFront.classList.add('dragging');
         }
     });
 }
@@ -230,14 +271,25 @@ function onMouseDown(event) {
 // Function to handle mousemove event
 function onMouseMove(event) {
     if (dragging && dragIndex > -1) {
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
+        const rectTop = canvasTop.getBoundingClientRect();
+        const xTop = event.clientX - rectTop.left;
+        const yTop = event.clientY - rectTop.top;
+        const centerXTop = canvasTop.width / 2;
+        const centerYTop = canvasTop.height / 2;
 
-        sources[dragIndex].positionX = posX + (x - centerX) / 50;
-        sources[dragIndex].positionY = posY + (y - centerY) / 50;
+        const rectFront = canvasFront.getBoundingClientRect();
+        const xFront = event.clientX - rectFront.left;
+        const yFront = event.clientY - rectFront.top;
+        const centerXFront = canvasFront.width / 2;
+        const centerYFront = canvasFront.height / 2;
+
+        if (Math.sqrt((xTop - (centerXTop + (sources[dragIndex].positionX - posX) * 50)) ** 2 + (yTop - (centerYTop + (sources[dragIndex].positionY - posY) * 50)) ** 2) < 8) {
+            sources[dragIndex].positionX = posX + (xTop - centerXTop) / 50;
+            sources[dragIndex].positionY = posY + (yTop - centerYTop) / 50;
+        } else if (Math.sqrt((xFront - (centerXFront + (sources[dragIndex].positionX - posX) * 50)) ** 2 + (yFront - (centerYFront + (sources[dragIndex].positionZ - posZ) * 50)) ** 2) < 8) {
+            sources[dragIndex].positionX = posX + (xFront - centerXFront) / 50;
+            sources[dragIndex].positionZ = posZ + (yFront - centerYFront) / 50;
+        }
 
         const orientation = calculateOrientation(listenerPos, {
             x: sources[dragIndex].positionX,
@@ -256,7 +308,8 @@ function onMouseMove(event) {
         panners[dragIndex].orientationY.value = sources[dragIndex].orientationY;
         panners[dragIndex].orientationZ.value = sources[dragIndex].orientationZ;
 
-        drawVisualization();
+        drawVisualizationTop();
+        drawVisualizationFront();
     }
 }
 
@@ -264,21 +317,29 @@ function onMouseMove(event) {
 function onMouseUp() {
     dragging = false;
     dragIndex = -1;
-    canvas.classList.remove('dragging');
+    canvasTop.classList.remove('dragging');
+    canvasFront.classList.remove('dragging');
 }
 
-// Add event listeners to canvas
-canvas.addEventListener('mousedown', onMouseDown);
-canvas.addEventListener('mousemove', onMouseMove);
-canvas.addEventListener('mouseup', onMouseUp);
-canvas.addEventListener('mouseout', onMouseUp);
+// Add event listeners to canvases
+canvasTop.addEventListener('mousedown', onMouseDown);
+canvasTop.addEventListener('mousemove', onMouseMove);
+canvasTop.addEventListener('mouseup', onMouseUp);
+canvasTop.addEventListener('mouseout', onMouseUp);
+
+canvasFront.addEventListener('mousedown', onMouseDown);
+canvasFront.addEventListener('mousemove', onMouseMove);
+canvasFront.addEventListener('mouseup', onMouseUp);
+canvasFront.addEventListener('mouseout', onMouseUp);
 
 // Initial draw
-drawVisualization();
+drawVisualizationTop();
+drawVisualizationFront();
 
-// Redraw visualization whenever window is resized to ensure positions are scaled correctly
+// Redraw visualizations whenever window is resized to ensure positions are scaled correctly
 window.addEventListener('resize', () => {
     listener.positionX.value = window.innerWidth / 2;
     listener.positionY.value = window.innerHeight / 2;
-    drawVisualization();
+    drawVisualizationTop();
+    drawVisualizationFront();
 });
