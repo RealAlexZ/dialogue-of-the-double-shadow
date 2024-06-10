@@ -195,11 +195,16 @@ function drawVisualization() {
     sources.forEach((source, index) => {
         const x = centerX + (source.positionX - posX) * 50; // Scale for visualization
         const y = centerY + (source.positionY - posY) * 50; // Scale for visualization
+        // Display the relative x, y, z values
+        const relX = (source.positionX - posX).toFixed(2);
+        const relY = (source.positionY - posY).toFixed(2);
+        const relZ = (source.positionZ - posZ).toFixed(2);
         ctx.fillStyle = "rgb(0,200,0)";
         ctx.beginPath();
         ctx.arc(x, y, 8, 0, 2 * Math.PI);
         ctx.fill();
-        ctx.fillText(`Source ${index + 1}`, x + 15, y);
+        ctx.fillText(`Sourced ${index + 1}:`, x + 15, y);
+        ctx.fillText(`${relX}, ${relY}, ${relZ}`, x + 15, y + 10)
     });
 }
 
