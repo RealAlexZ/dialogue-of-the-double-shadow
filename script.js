@@ -41,9 +41,9 @@ function calculateOrientation(listenerPos, sourcePos) {
 const listenerPos = { x: posX, y: posY, z: posZ };
 
 // Constants for panner properties
-const innerCone = 2;
-const outerCone = 2;
-const outerGain = 0;
+const innerCone = 30;
+const outerCone = 60;
+const outerGain = 0.3;
 const distanceModel = "inverse";
 const maxDistance = 40;
 const refDistance = 5;
@@ -98,7 +98,9 @@ const masterGainNodePremiere = new GainNode(audioCtx, { gain: masterGainNodePrem
 
 // Set the audio context destination to support the maximum number of output channels
 audioCtx.destination.channelCount = audioCtx.destination.maxChannelCount;
+console.log(audioCtx.destination.channelCount);
 audioCtx.destination.channelCountMode = "explicit";
+audioCtx.destination.channelInterpretation = "speakers";
 
 // Get the audio elements
 const audioElementDouble = document.getElementById("double");
