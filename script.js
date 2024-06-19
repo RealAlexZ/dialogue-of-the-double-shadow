@@ -60,12 +60,12 @@ const rollOff = 3;
 // PositionY: down (-) or up (+)
 // PositionZ: back (-) or front (0)
 const sources = [
-    { positionX: posX - 1, positionY: posY, positionZ: posZ - 3 }, // Channel 1
-    { positionX: posX + 1, positionY: posY, positionZ: posZ - 3 }, // Channel 2
-    { positionX: posX + 3, positionY: posY, positionZ: posZ }, // Channel 3
-    { positionX: posX + 1, positionY: posY, positionZ: posZ + 3 }, // Channel 4
-    { positionX: posX - 1, positionY: posY, positionZ: posZ + 3 }, // Channel 5
-    { positionX: posX - 3, positionY: posY, positionZ: posZ }, // Channel 6
+    { positionX: posX - 1, positionY: posY, positionZ: posZ - 1.7321 }, // Channel 1
+    { positionX: posX + 1, positionY: posY, positionZ: posZ - 1.7321 }, // Channel 2
+    { positionX: posX + 2, positionY: posY, positionZ: posZ }, // Channel 3
+    { positionX: posX + 1, positionY: posY, positionZ: posZ + 1.7321 }, // Channel 4
+    { positionX: posX - 1, positionY: posY, positionZ: posZ + 1.7321 }, // Channel 5
+    { positionX: posX - 2, positionY: posY, positionZ: posZ }, // Channel 6
     { positionX: posX, positionY: posY, positionZ: posZ - 0.5 } // Channel 7 (premiere)
 ];
 
@@ -267,13 +267,14 @@ const ctxFront = canvasFront.getContext('2d');
 let dragging = false;
 let dragIndex = -1;
 
-// Function to draw the top view visualization
+// Redraw visualizations to reflect any changes
 function drawVisualizationTop() {
-    ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height); // Clear the canvas
+    ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height); // Clear the canvas first
 
-    // Draw the listener at the center
     const centerX = canvasTop.width / 2;
     const centerY = canvasTop.height / 2;
+
+    // Draw the listener at the center
     ctxTop.fillStyle = 'red';
     ctxTop.beginPath();
     ctxTop.arc(centerX, centerY, 10, 0, 2 * Math.PI);
@@ -282,8 +283,9 @@ function drawVisualizationTop() {
 
     // Draw each source
     sources.forEach((source, index) => {
-        const x = centerX + (source.positionX - posX) * 50; // Scale for visualization
-        const y = centerY + (source.positionY - posY) * 50; // Scale for visualization
+        const x = centerX + (source.positionX - posX) * 50;
+        const y = centerY + (source.positionZ - posZ) * 50;
+
         // Display the relative x, y, z values
         const relX = (source.positionX - posX).toFixed(2);
         const relY = (source.positionY - posY).toFixed(2);
@@ -297,13 +299,13 @@ function drawVisualizationTop() {
     });
 }
 
-// Function to draw the front view visualization
 function drawVisualizationFront() {
-    ctxFront.clearRect(0, 0, canvasFront.width, canvasFront.height); // Clear the canvas
+    ctxFront.clearRect(0, 0, canvasFront.width, canvasFront.height); // Clear the canvas first
 
-    // Draw the listener at the center
     const centerX = canvasFront.width / 2;
     const centerY = canvasFront.height / 2;
+
+    // Draw the listener at the center
     ctxFront.fillStyle = 'red';
     ctxFront.beginPath();
     ctxFront.arc(centerX, centerY, 10, 0, 2 * Math.PI);
@@ -312,17 +314,14 @@ function drawVisualizationFront() {
 
     // Draw each source
     sources.forEach((source, index) => {
-        const x = centerX + (source.positionX - posX) * 50; // Scale for visualization
-        const y = centerY + (source.positionZ - posZ) * 50; // Scale for visualization
-        // Display the relative x, z values
-        const relX = (source.positionX - posX).toFixed(2);
-        const relZ = (source.positionZ - posZ).toFixed(2);
+        const x = centerX + (source.positionX - posX) * 50;
+        const y = centerY - (source.positionY - posY) * 50;
+
         ctxFront.fillStyle = "rgb(0,200,0)";
         ctxFront.beginPath();
-        ctxFront.arc(x, y, 8, 0, 2 * Math.PI);
+        ctxFront.arc(x, y, 10, 0, 2 * Math.PI);
         ctxFront.fill();
-        ctxFront.fillText(`Source ${index + 1}:`, x + 15, y);
-        ctxFront.fillText(`${relX}, 0, ${relZ}`, x + 15, y + 10);
+        ctxFront.fillText(`Source ${index + 1}`, x + 15, y + 15);
     });
 }
 
@@ -331,68 +330,51 @@ function onMouseDown(event) {
     const rectTop = canvasTop.getBoundingClientRect();
     const xTop = event.clientX - rectTop.left;
     const yTop = event.clientY - rectTop.top;
+
+    // Calculate the center of the canvas for reference
     const centerXTop = canvasTop.width / 2;
     const centerYTop = canvasTop.height / 2;
 
-    const rectFront = canvasFront.getBoundingClientRect();
-    const xFront = event.clientX - rectFront.left;
-    const yFront = event.clientY - rectFront.top;
-    const centerXFront = canvasFront.width / 2;
-    const centerYFront = canvasFront.height / 2;
-
     sources.forEach((source, index) => {
-        const sxTop = centerXTop + (source.positionX - posX) * 50;
-        const syTop = centerYTop + (source.positionY - posY) * 50;
-        const sxFront = centerXFront + (source.positionX - posX) * 50;
-        const syFront = centerYFront + (source.positionZ - posZ) * 50;
-        if (Math.sqrt((xTop - sxTop) ** 2 + (yTop - syTop) ** 2) < 8 || Math.sqrt((xFront - sxFront) ** 2 + (yFront - syFront) ** 2) < 8) {
+        // Calculate the display position of the source
+        const sourceX = centerXTop + (source.positionX - posX) * 50;
+        const sourceY = centerYTop + (source.positionZ - posZ) * 50;
+
+        // Check if the mouse down event is close enough to consider it as dragging
+        if (Math.sqrt((xTop - sourceX) ** 2 + (yTop - sourceY) ** 2) < 10) { // Assuming a radius of 10 for dragging proximity
             dragging = true;
             dragIndex = index;
-            canvasTop.classList.add('dragging');
-            canvasFront.classList.add('dragging');
         }
     });
 }
 
 // Function to handle mousemove event
 function onMouseMove(event) {
-    if (dragging && dragIndex > -1) {
+    if (dragging && dragIndex !== -1) {
         const rectTop = canvasTop.getBoundingClientRect();
         const xTop = event.clientX - rectTop.left;
         const yTop = event.clientY - rectTop.top;
+
         const centerXTop = canvasTop.width / 2;
         const centerYTop = canvasTop.height / 2;
 
-        const rectFront = canvasFront.getBoundingClientRect();
-        const xFront = event.clientX - rectFront.left;
-        const yFront = event.clientY - rectFront.top;
-        const centerXFront = canvasFront.width / 2;
-        const centerYFront = canvasFront.height / 2;
+        // Update the position of the source being dragged based on mouse coordinates
+        sources[dragIndex].positionX = posX + (xTop - centerXTop) / 50;
+        sources[dragIndex].positionZ = posZ + (yTop - centerYTop) / 50;
 
-        if (Math.sqrt((xTop - (centerXTop + (sources[dragIndex].positionX - posX) * 50)) ** 2 + (yTop - (centerYTop + (sources[dragIndex].positionY - posY) * 50)) ** 2) < 8) {
-            sources[dragIndex].positionX = posX + (xTop - centerXTop) / 50;
-            sources[dragIndex].positionY = posY + (yTop - centerYTop) / 50;
-        } else if (Math.sqrt((xFront - (centerXFront + (sources[dragIndex].positionX - posX) * 50)) ** 2 + (yFront - (centerYFront + (sources[dragIndex].positionZ - posZ) * 50)) ** 2) < 8) {
-            sources[dragIndex].positionX = posX + (xFront - centerXFront) / 50;
-            sources[dragIndex].positionZ = posZ + (yFront - centerYFront) / 50;
-        }
-
+        // Recalculate orientation for the source
         const orientation = calculateOrientation(listenerPos, {
             x: sources[dragIndex].positionX,
             y: sources[dragIndex].positionY,
             z: sources[dragIndex].positionZ
         });
 
-        sources[dragIndex].orientationX = orientation.orientationX;
-        sources[dragIndex].orientationY = orientation.orientationY;
-        sources[dragIndex].orientationZ = orientation.orientationZ;
-
+        // Update the panner node values
         panners[dragIndex].positionX.value = sources[dragIndex].positionX;
-        panners[dragIndex].positionY.value = sources[dragIndex].positionY;
         panners[dragIndex].positionZ.value = sources[dragIndex].positionZ;
-        panners[dragIndex].orientationX.value = sources[dragIndex].orientationX;
-        panners[dragIndex].orientationY.value = sources[dragIndex].orientationY;
-        panners[dragIndex].orientationZ.value = sources[dragIndex].orientationZ;
+        panners[dragIndex].orientationX.value = orientation.orientationX;
+        panners[dragIndex].orientationY.value = orientation.orientationY;
+        panners[dragIndex].orientationZ.value = orientation.orientationZ;
 
         drawVisualizationTop();
         drawVisualizationFront();
@@ -401,13 +383,12 @@ function onMouseMove(event) {
 
 // Function to handle mouseup event
 function onMouseUp() {
-    dragging = false;
-    dragIndex = -1;
-    canvasTop.classList.remove('dragging');
-    canvasFront.classList.remove('dragging');
+    if (dragging) {
+        dragging = false;
+        dragIndex = -1;
+    }
 }
 
-// Add event listeners to canvases
 canvasTop.addEventListener('mousedown', onMouseDown);
 canvasTop.addEventListener('mousemove', onMouseMove);
 canvasTop.addEventListener('mouseup', onMouseUp);
@@ -418,15 +399,7 @@ canvasFront.addEventListener('mousemove', onMouseMove);
 canvasFront.addEventListener('mouseup', onMouseUp);
 canvasFront.addEventListener('mouseout', onMouseUp);
 
-// Initial draw
 drawVisualizationTop();
 drawVisualizationFront();
 
-// Redraw visualizations whenever window is resized to ensure positions are scaled correctly
-window.addEventListener('resize', () => {
-    listener.positionX.value = window.innerWidth / 2;
-    listener.positionY.value = window.innerHeight / 2;
-    drawVisualizationTop();
-    drawVisualizationFront();
-});
 // /*--------------------Canvas Display of Sound Source Positions--------------------*/
