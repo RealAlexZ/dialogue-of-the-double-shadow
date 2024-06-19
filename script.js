@@ -1,24 +1,15 @@
+/*--------------------Global Variables--------------------*/
 var masterGainNodeDoubleMaxGain = 0.20;
 var masterGainNodePremiereMaxGain = 0.40;
+/*--------------------Global Variables--------------------*/
 
+
+
+/*--------------------Web Audio Environment Setup--------------------*/
 // Create a context and listener
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const listener = audioCtx.listener;
-
-
-// Load the impulse response; upon load, connect it to the audio output.
-// IR response acquired from http://reverbjs.org/
-const reverbUrl = "http://reverbjs.org/Library/MidiverbMark2Preset29.m4a";
-const reverbNode = audioCtx.createConvolver();
-fetch(reverbUrl)
-    .then(response => response.arrayBuffer())
-    .then(arraybuffer => audioCtx.decodeAudioData(arraybuffer))
-    .then(decodedData => {
-        // The reverb node is ready and now can be used in the audio routing below
-        reverbNode.buffer = decodedData;
-    })
-    .catch(e => console.error("Error loading or decoding reverb file:", e));
 
 // Set the listener's position
 const posX = window.innerWidth / 2;
@@ -37,6 +28,45 @@ listener.upX.value = 0;
 listener.upY.value = 1;
 listener.upZ.value = 0;
 
+// Load the impulse response; upon load, connect it to the audio output.
+// IR response acquired from http://reverbjs.org/
+const reverbUrl = "http://reverbjs.org/Library/MidiverbMark2Preset29.m4a";
+const reverbNode = audioCtx.createConvolver();
+fetch(reverbUrl)
+    .then(response => response.arrayBuffer())
+    .then(arraybuffer => audioCtx.decodeAudioData(arraybuffer))
+    .then(decodedData => {
+        // The reverb node is ready and now can be used in the audio routing below
+        reverbNode.buffer = decodedData;
+    })
+    .catch(e => console.error("Error loading or decoding reverb file:", e));
+
+const listenerPos = { x: posX, y: posY, z: posZ };
+
+// Constants for panner properties
+const innerCone = 30;
+const outerCone = 60;
+const outerGain = 0.3;
+const distanceModel = "inverse";
+const maxDistance = 40;
+const refDistance = 5;
+const rollOff = 3;
+/*--------------------Web Audio Environment Setup--------------------*/
+
+
+
+/*--------------------Sound Source Panner Nodes and Effect Chain Setup--------------------*/
+// Create PannerNode for each sound source
+const sources = [
+    { positionX: posX - 0.1, positionY: posY + 3 , positionZ: posZ }, // Channel 1
+    { positionX: posX + 0.1, positionY: posY + 3, positionZ: posZ }, // Channel 2
+    { positionX: posX + 3, positionY: posY, positionZ: posZ }, // Channel 3
+    { positionX: posX + 0.1, positionY: posY - 3, positionZ: posZ }, // Channel 4
+    { positionX: posX - 0.1, positionY: posY - 3, positionZ: posZ }, // Channel 5
+    { positionX: posX - 3, positionY: posY, positionZ: posZ }, // Channel 6
+    { positionX: posX, positionY: posY, positionZ: posZ - 0.5 } // Channel 7 (premiere)
+];
+
 // Function to calculate orientation
 function calculateOrientation(listenerPos, sourcePos) {
     const orientationX = listenerPos.x - sourcePos.x;
@@ -51,28 +81,6 @@ function calculateOrientation(listenerPos, sourcePos) {
         orientationZ: orientationZ / length
     };
 }
-
-const listenerPos = { x: posX, y: posY, z: posZ };
-
-// Constants for panner properties
-const innerCone = 30;
-const outerCone = 60;
-const outerGain = 0.3;
-const distanceModel = "inverse";
-const maxDistance = 40;
-const refDistance = 5;
-const rollOff = 3;
-
-// Create PannerNode for each sound source
-const sources = [
-    { positionX: posX - 0.1, positionY: posY + 3 , positionZ: posZ }, // Channel 1
-    { positionX: posX + 0.1, positionY: posY + 3, positionZ: posZ }, // Channel 2
-    { positionX: posX + 3, positionY: posY, positionZ: posZ }, // Channel 3
-    { positionX: posX + 0.1, positionY: posY - 3, positionZ: posZ }, // Channel 4
-    { positionX: posX - 0.1, positionY: posY - 3, positionZ: posZ }, // Channel 5
-    { positionX: posX - 3, positionY: posY, positionZ: posZ }, // Channel 6
-    { positionX: posX, positionY: posY, positionZ: posZ - 0.5 } // Channel 7 (premiere)
-];
 
 sources.forEach(source => {
     const orientation = calculateOrientation(listenerPos, {
@@ -132,7 +140,11 @@ panners.forEach((panner, index) => {
         trackPremiere.connect(panner).connect(reverbNode).connect(gainNodes[index]).connect(masterGainNodePremiere).connect(audioCtx.destination);
     }
 });
+/*--------------------Sound Source Panner Nodes and Effect Chain Setup--------------------*/
 
+
+
+/*--------------------Play/Pause Button and Sliders--------------------*/
 // Select our play button
 const playButton = document.querySelector("button");
 
@@ -188,7 +200,6 @@ gainNodes.forEach((gainNode, index) => {
     sliders.push(slider);  // Store the slider reference
 });
 
-// Do the same for master gain nodes
 const { container: containerDouble, slider: sliderDouble } = createSlider("Double Master Volume", masterGainNodeDouble, 0., masterGainNodeDoubleMaxGain);
 controlsContainer.appendChild(containerDouble);
 sliders.push(sliderDouble);
@@ -196,7 +207,11 @@ sliders.push(sliderDouble);
 const { container: containerPremiere, slider: sliderPremiere } = createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain);
 controlsContainer.appendChild(containerPremiere);
 sliders.push(sliderPremiere);
+/*--------------------Play/Pause Button and Sliders--------------------*/
 
+
+
+/*--------------------Presets of Slider Values--------------------*/
 // Function to set volumes for each channel according to preset configurations
 function setVolumes(volumes) {
     gainNodes.forEach((gainNode, index) => {
@@ -235,7 +250,11 @@ document.getElementById('preset6').addEventListener('click', function() {
     // Preset 3: Channels 6 and 7 at 100%, others at 0%
     setVolumes([0, 0, 0, 0, 0, 100, 100]);
 });
+/*--------------------Presets of Slider Values--------------------*/
 
+
+
+/*--------------------Canvas Display of Sound Source Positions--------------------*/
 // Get canvas elements and contexts
 const canvasTop = document.getElementById('audioVisualizerTop');
 const ctxTop = canvasTop.getContext('2d');
@@ -408,3 +427,4 @@ window.addEventListener('resize', () => {
     drawVisualizationTop();
     drawVisualizationFront();
 });
+/*--------------------Canvas Display of Sound Source Positions--------------------*/
