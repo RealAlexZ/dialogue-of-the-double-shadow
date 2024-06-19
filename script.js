@@ -266,6 +266,7 @@ const ctxFront = canvasFront.getContext('2d');
 
 let dragging = false;
 let dragIndex = -1;
+let activeCanvas = null;
 
 // Redraw visualizations to reflect any changes
 function drawVisualizationTop() {
@@ -317,50 +318,81 @@ function drawVisualizationFront() {
         const x = centerX + (source.positionX - posX) * 50;
         const y = centerY - (source.positionY - posY) * 50;
 
+        // Display the relative x, y, z values
+        const relX = (source.positionX - posX).toFixed(2);
+        const relY = (source.positionY - posY).toFixed(2);
+        const relZ = (source.positionZ - posZ).toFixed(2);
         ctxFront.fillStyle = "rgb(0,200,0)";
         ctxFront.beginPath();
-        ctxFront.arc(x, y, 10, 0, 2 * Math.PI);
+        ctxFront.arc(x, y, 8, 0, 2 * Math.PI);
         ctxFront.fill();
-        ctxFront.fillText(`Source ${index + 1}`, x + 15, y + 15);
+        ctxFront.fillText(`Source ${index + 1}:`, x + 15, y);
+        ctxFront.fillText(`${relX}, ${relY}, ${relZ}`, x + 15, y + 10);
     });
 }
 
-// Function to handle mousedown event
+
+// Function to handle mousedown event for both canvases
 function onMouseDown(event) {
     const rectTop = canvasTop.getBoundingClientRect();
     const xTop = event.clientX - rectTop.left;
     const yTop = event.clientY - rectTop.top;
 
-    // Calculate the center of the canvas for reference
+    const rectFront = canvasFront.getBoundingClientRect();
+    const xFront = event.clientX - rectFront.left;
+    const yFront = event.clientY - rectFront.top;
+
     const centerXTop = canvasTop.width / 2;
     const centerYTop = canvasTop.height / 2;
 
-    sources.forEach((source, index) => {
-        // Calculate the display position of the source
-        const sourceX = centerXTop + (source.positionX - posX) * 50;
-        const sourceY = centerYTop + (source.positionZ - posZ) * 50;
+    const centerXFront = canvasFront.width / 2;
+    const centerYFront = canvasFront.height / 2;
 
-        // Check if the mouse down event is close enough to consider it as dragging
-        if (Math.sqrt((xTop - sourceX) ** 2 + (yTop - sourceY) ** 2) < 10) { // Assuming a radius of 10 for dragging proximity
+    sources.forEach((source, index) => {
+        const sourceXTop = centerXTop + (source.positionX - posX) * 50;
+        const sourceYTop = centerYTop + (source.positionZ - posZ) * 50;
+
+        const sourceXFront = centerXFront + (source.positionX - posX) * 50;
+        const sourceYFront = centerYFront - (source.positionY - posY) * 50;
+
+        if (Math.sqrt((xTop - sourceXTop) ** 2 + (yTop - sourceYTop) ** 2) < 10) {
             dragging = true;
             dragIndex = index;
+            activeCanvas = 'top';
+        } else if (Math.sqrt((xFront - sourceXFront) ** 2 + (yFront - sourceYFront) ** 2) < 10) {
+            dragging = true;
+            dragIndex = index;
+            activeCanvas = 'front';
         }
     });
 }
 
-// Function to handle mousemove event
+// Function to handle mousemove event for both canvases
 function onMouseMove(event) {
     if (dragging && dragIndex !== -1) {
-        const rectTop = canvasTop.getBoundingClientRect();
-        const xTop = event.clientX - rectTop.left;
-        const yTop = event.clientY - rectTop.top;
+        if (activeCanvas === 'top') {
+            const rectTop = canvasTop.getBoundingClientRect();
+            const xTop = event.clientX - rectTop.left;
+            const yTop = event.clientY - rectTop.top;
 
-        const centerXTop = canvasTop.width / 2;
-        const centerYTop = canvasTop.height / 2;
+            const centerXTop = canvasTop.width / 2;
+            const centerYTop = canvasTop.height / 2;
 
-        // Update the position of the source being dragged based on mouse coordinates
-        sources[dragIndex].positionX = posX + (xTop - centerXTop) / 50;
-        sources[dragIndex].positionZ = posZ + (yTop - centerYTop) / 50;
+            // Update the x and z positions using the top view
+            sources[dragIndex].positionX = posX + (xTop - centerXTop) / 50;
+            sources[dragIndex].positionZ = posZ + (yTop - centerYTop) / 50;
+        } else if (activeCanvas === 'front') {
+            const rectFront = canvasFront.getBoundingClientRect();
+            const xFront = event.clientX - rectFront.left;
+            const yFront = event.clientY - rectFront.top;
+
+            const centerXFront = canvasFront.width / 2;
+            const centerYFront = canvasFront.height / 2;
+
+            // Update the x and y positions using the front view
+            sources[dragIndex].positionX = posX + (xFront - centerXFront) / 50;
+            sources[dragIndex].positionY = posY - (yFront - centerYFront) / 50;
+        }
 
         // Recalculate orientation for the source
         const orientation = calculateOrientation(listenerPos, {
@@ -371,6 +403,7 @@ function onMouseMove(event) {
 
         // Update the panner node values
         panners[dragIndex].positionX.value = sources[dragIndex].positionX;
+        panners[dragIndex].positionY.value = sources[dragIndex].positionY;
         panners[dragIndex].positionZ.value = sources[dragIndex].positionZ;
         panners[dragIndex].orientationX.value = orientation.orientationX;
         panners[dragIndex].orientationY.value = orientation.orientationY;
@@ -386,6 +419,7 @@ function onMouseUp() {
     if (dragging) {
         dragging = false;
         dragIndex = -1;
+        activeCanvas = null;
     }
 }
 
