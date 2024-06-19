@@ -1,0 +1,21 @@
+#canvas-container {
+    position: relative;
+}
+
+canvas {
+    border: 1px solid #000000;
+    cursor: grab;
+}
+
+canvas.dragging {
+    cursor: grabbing;
+}
+
+#preset-controls {
+    margin-top: 20px;
+}
+
+.preset-btn img {
+    width: 50px;
+    height: auto;
+}

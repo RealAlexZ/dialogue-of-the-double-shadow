@@ -168,23 +168,73 @@ function createSlider(labelText, gainNode, min = 0., max = 1.) {
     slider.min = min;
     slider.max = max;
     slider.step = 0.01;
+    // slider.value = gainNode.gain.value;  // Set initial slider value based on the GainNode
     slider.value = max;
     slider.addEventListener("input", () => {
-        gainNode.gain.value = slider.value;
+        gainNode.gain.value = parseFloat(slider.value);
     });
     container.appendChild(label);
     container.appendChild(slider);
-    return container;
+    return { container, slider };  // Return both the container and the slider
 }
 
 // Create sliders for each GainNode and the master GainNode
 const controlsContainer = document.getElementById("controls");
+const sliders = [];  // Array to hold references to slider elements
+
 gainNodes.forEach((gainNode, index) => {
-    controlsContainer.appendChild(createSlider(`Source ${index + 1} Volume`, gainNode));
+    const { container, slider } = createSlider(`Source ${index + 1} Volume`, gainNode);
+    controlsContainer.appendChild(container);
+    sliders.push(slider);  // Store the slider reference
 });
 
-controlsContainer.appendChild(createSlider("Double Master Volume", masterGainNodeDouble, 0., masterGainNodeDoubleMaxGain));
-controlsContainer.appendChild(createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain));
+// Do the same for master gain nodes
+const { container: containerDouble, slider: sliderDouble } = createSlider("Double Master Volume", masterGainNodeDouble, 0., masterGainNodeDoubleMaxGain);
+controlsContainer.appendChild(containerDouble);
+sliders.push(sliderDouble);
+
+const { container: containerPremiere, slider: sliderPremiere } = createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain);
+controlsContainer.appendChild(containerPremiere);
+sliders.push(sliderPremiere);
+
+// Function to set volumes for each channel according to preset configurations
+function setVolumes(volumes) {
+    gainNodes.forEach((gainNode, index) => {
+        sliders[index].value = volumes[index] / 100;  // Update the slider value to reflect the change
+        gainNode.gain.value = volumes[index] / 100;
+    });
+}
+
+// Adding event listeners to preset buttons to control the volumes
+document.getElementById('preset1').addEventListener('click', function() {
+    // Preset 1: Channels 1 and 7 at 100%, others at 0%
+    setVolumes([100, 0, 0, 0, 0, 0, 100]);
+});
+
+document.getElementById('preset2').addEventListener('click', function() {
+    // Preset 2: Channels 2 and 7 at 100%, others at 0%
+    setVolumes([0, 100, 0, 0, 0, 0, 100]);
+});
+
+document.getElementById('preset3').addEventListener('click', function() {
+    // Preset 3: Channels 3 and 7 at 100%, others at 0%
+    setVolumes([0, 0, 100, 0, 0, 0, 100]);
+});
+
+document.getElementById('preset4').addEventListener('click', function() {
+    // Preset 1: Channels 4 and 7 at 100%, others at 0%
+    setVolumes([0, 0, 0, 100, 0, 0, 100]);
+});
+
+document.getElementById('preset5').addEventListener('click', function() {
+    // Preset 2: Channels 5 and 7 at 100%, others at 0%
+    setVolumes([0, 0, 0, 0, 100, 0, 100]);
+});
+
+document.getElementById('preset6').addEventListener('click', function() {
+    // Preset 3: Channels 6 and 7 at 100%, others at 0%
+    setVolumes([0, 0, 0, 0, 0, 100, 100]);
+});
 
 // Get canvas elements and contexts
 const canvasTop = document.getElementById('audioVisualizerTop');

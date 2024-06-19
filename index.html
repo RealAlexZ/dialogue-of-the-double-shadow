@@ -15,6 +15,15 @@
         canvas.dragging {
             cursor: grabbing;
         }
+
+        #preset-controls {
+            margin-top: 20px;
+        }
+        
+        .preset-btn img {
+            width: 50px;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -22,12 +31,18 @@
     <audio id="premiere" src="audio/premiere-keys.mp3"></audio>
     <button data-playing="false" role="switch">Play/Pause</button>
     <div id="controls"></div>
+    <div id="preset-controls">
+        <button id="preset1" class="preset-btn"><img src="images/1.jpg" alt="Preset 1"></button>
+        <button id="preset2" class="preset-btn"><img src="images/2.jpg" alt="Preset 2"></button>
+        <button id="preset3" class="preset-btn"><img src="images/3.jpg" alt="Preset 3"></button>
+        <button id="preset4" class="preset-btn"><img src="images/4.jpg" alt="Preset 4"></button>
+        <button id="preset5" class="preset-btn"><img src="images/5.jpg" alt="Preset 5"></button>
+        <button id="preset6" class="preset-btn"><img src="images/6.jpg" alt="Preset 6"></button>
+    </div>
     <div id="canvas-container">
         <canvas id="audioVisualizerTop" width="500" height="500"></canvas>
         <canvas id="audioVisualizerFront" width="500" height="500"></canvas>
     </div>
-    <!--Script JS loading-->
-    <!-- <script src="http://reverbjs.org/reverb.js"></script> -->
     <script src="script.js"></script>
 </body>
 </html>
