@@ -1,12 +1,10 @@
 #canvas-container {
     position: relative;
 }
-
 canvas {
     border: 1px solid #000000;
     cursor: grab;
 }
-
 canvas.dragging {
     cursor: grabbing;
 }
