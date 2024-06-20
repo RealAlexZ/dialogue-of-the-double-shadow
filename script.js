@@ -183,9 +183,11 @@ function createSlider(labelText, gainNode, min = 0., max = 1.) {
     slider.max = max;
     slider.step = 0.01;
     // slider.value = gainNode.gain.value;  // Set initial slider value based on the GainNode
-    slider.value = max;
+    slider.value = gainNode.gain.value;
     slider.addEventListener("input", () => {
         gainNode.gain.value = parseFloat(slider.value);
+        drawVisualizationTop();
+        drawVisualizationFront();
     });
     container.appendChild(label);
     container.appendChild(slider);
@@ -226,31 +228,43 @@ function setVolumes(volumes) {
 document.getElementById('preset1').addEventListener('click', function() {
     // Preset 1: Channels 1 and 7 at 100%, others at 0%
     setVolumes([100, 0, 0, 0, 0, 0, 100]);
+    drawVisualizationTop();
+    drawVisualizationFront();
 });
 
 document.getElementById('preset2').addEventListener('click', function() {
     // Preset 2: Channels 2 and 7 at 100%, others at 0%
     setVolumes([0, 100, 0, 0, 0, 0, 100]);
+    drawVisualizationTop();
+    drawVisualizationFront();
 });
 
 document.getElementById('preset3').addEventListener('click', function() {
     // Preset 3: Channels 3 and 7 at 100%, others at 0%
     setVolumes([0, 0, 100, 0, 0, 0, 100]);
+    drawVisualizationTop();
+    drawVisualizationFront();
 });
 
 document.getElementById('preset4').addEventListener('click', function() {
     // Preset 1: Channels 4 and 7 at 100%, others at 0%
     setVolumes([0, 0, 0, 100, 0, 0, 100]);
+    drawVisualizationTop();
+    drawVisualizationFront();
 });
 
 document.getElementById('preset5').addEventListener('click', function() {
     // Preset 2: Channels 5 and 7 at 100%, others at 0%
     setVolumes([0, 0, 0, 0, 100, 0, 100]);
+    drawVisualizationTop();
+    drawVisualizationFront();
 });
 
 document.getElementById('preset6').addEventListener('click', function() {
     // Preset 3: Channels 6 and 7 at 100%, others at 0%
     setVolumes([0, 0, 0, 0, 0, 100, 100]);
+    drawVisualizationTop();
+    drawVisualizationFront();
 });
 /*--------------------Presets of Slider Values--------------------*/
 
@@ -293,7 +307,7 @@ function drawVisualizationTop() {
         const relZ = (source.positionZ - posZ).toFixed(2);
         ctxTop.fillStyle = "rgb(0,200,0)";
         ctxTop.beginPath();
-        ctxTop.arc(x, y, 8, 0, 2 * Math.PI);
+        ctxTop.arc(x, y, gainNodes[index].gain.value * 5 + 5, 0, 2 * Math.PI);
         ctxTop.fill();
         ctxTop.fillText(`Source ${index + 1}:`, x + 15, y);
         ctxTop.fillText(`${relX}, ${relY}, ${relZ}`, x + 15, y + 10);
@@ -324,7 +338,7 @@ function drawVisualizationFront() {
         const relZ = (source.positionZ - posZ).toFixed(2);
         ctxFront.fillStyle = "rgb(0,200,0)";
         ctxFront.beginPath();
-        ctxFront.arc(x, y, 8, 0, 2 * Math.PI);
+        ctxFront.arc(x, y, gainNodes[index].gain.value * 5 + 5, 0, 2 * Math.PI);
         ctxFront.fill();
         ctxFront.fillText(`Source ${index + 1}:`, x + 15, y);
         ctxFront.fillText(`${relX}, ${relY}, ${relZ}`, x + 15, y + 10);
