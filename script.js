@@ -216,55 +216,33 @@ sliders.push(sliderPremiere);
 
 
 /*--------------------Presets of Slider Values--------------------*/
+document.querySelectorAll('.preset-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const presetValues = this.getAttribute('data-preset').split(',').map(Number);
+        setVolumes(presetValues);
+        drawVisualizationTop();
+        drawVisualizationFront();
+    });
+});
+
 // Function to set volumes for each channel according to preset configurations
 function setVolumes(volumes) {
-    gainNodes.forEach((gainNode, index) => {
-        sliders[index].value = volumes[index] / 100;  // Update the slider value to reflect the change
-        gainNode.gain.value = volumes[index] / 100;
+    volumes.forEach((volume, index) => {
+        if (gainNodes[index]) { // Check if the gainNode exists
+            gainNodes[index].gain.value = volume / 100;
+            sliders[index].value = volume / 100; // Update the slider value to reflect the change
+        }
     });
 }
 
-// Adding event listeners to preset buttons to control the volumes
-document.getElementById('preset1').addEventListener('click', function() {
-    // Preset 1: Channels 1 and 7 at 100%, others at 0%
-    setVolumes([100, 0, 0, 0, 0, 0, 100]);
-    drawVisualizationTop();
-    drawVisualizationFront();
-});
-
-document.getElementById('preset2').addEventListener('click', function() {
-    // Preset 2: Channels 2 and 7 at 100%, others at 0%
-    setVolumes([0, 100, 0, 0, 0, 0, 100]);
-    drawVisualizationTop();
-    drawVisualizationFront();
-});
-
-document.getElementById('preset3').addEventListener('click', function() {
-    // Preset 3: Channels 3 and 7 at 100%, others at 0%
-    setVolumes([0, 0, 100, 0, 0, 0, 100]);
-    drawVisualizationTop();
-    drawVisualizationFront();
-});
-
-document.getElementById('preset4').addEventListener('click', function() {
-    // Preset 1: Channels 4 and 7 at 100%, others at 0%
-    setVolumes([0, 0, 0, 100, 0, 0, 100]);
-    drawVisualizationTop();
-    drawVisualizationFront();
-});
-
-document.getElementById('preset5').addEventListener('click', function() {
-    // Preset 2: Channels 5 and 7 at 100%, others at 0%
-    setVolumes([0, 0, 0, 0, 100, 0, 100]);
-    drawVisualizationTop();
-    drawVisualizationFront();
-});
-
-document.getElementById('preset6').addEventListener('click', function() {
-    // Preset 3: Channels 6 and 7 at 100%, others at 0%
-    setVolumes([0, 0, 0, 0, 0, 100, 100]);
-    drawVisualizationTop();
-    drawVisualizationFront();
+document.addEventListener('keydown', function(event) {
+    if (event.key >= '1' && event.key <= '6') {
+        const index = event.key - 1;
+        const presetButton = document.querySelectorAll('.preset-btn')[index];
+        if (presetButton) {
+            presetButton.click();
+        }
+    }
 });
 /*--------------------Presets of Slider Values--------------------*/
 
