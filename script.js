@@ -225,15 +225,39 @@ document.querySelectorAll('.preset-btn').forEach(button => {
     });
 });
 
-// Function to set volumes for each channel according to preset configurations
+// Function to gradually adjust volume and update the UI according to preset configurations
 function setVolumes(volumes) {
-    volumes.forEach((volume, index) => {
-        if (gainNodes[index]) { // Check if the gainNode exists
-            gainNodes[index].gain.value = volume / 100;
-            sliders[index].value = volume / 100; // Update the slider value to reflect the change
+    const rampTime = parseFloat(document.getElementById('ramp-time-slider').value);
+    const steps = rampTime / (1000 / 60); // Assuming 60 frames per second
+    const increment = volumes.map((targetVolume, index) => 
+        (targetVolume / 100 - gainNodes[index].gain.value) / steps);
+    
+    let stepCount = 0;
+
+    function rampVolume() {
+        if (stepCount < steps) {
+            gainNodes.forEach((gainNode, index) => {
+                gainNode.gain.value += increment[index];
+                sliders[index].value = gainNode.gain.value;
+            });
+            drawVisualizationTop();
+            drawVisualizationFront();
+            stepCount++;
+            requestAnimationFrame(rampVolume);
+        } else {
+            // Ensure final values are set precisely at the end of the ramp
+            gainNodes.forEach((gainNode, index) => {
+                gainNode.gain.value = volumes[index] / 100;
+                sliders[index].value = gainNode.gain.value;
+            });
+            drawVisualizationTop();
+            drawVisualizationFront();
         }
-    });
+    }
+
+    rampVolume();
 }
+
 
 document.addEventListener('keydown', function(event) {
     if (event.key >= '1' && event.key <= '6') {
@@ -243,6 +267,10 @@ document.addEventListener('keydown', function(event) {
             presetButton.click();
         }
     }
+});
+
+document.getElementById('ramp-time-slider').addEventListener('input', function() {
+    document.getElementById('ramp-time-value').textContent = `${this.value} ms`;
 });
 /*--------------------Presets of Slider Values--------------------*/
 

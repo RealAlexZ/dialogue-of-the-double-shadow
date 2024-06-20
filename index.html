@@ -19,6 +19,11 @@
         <button id="preset5" class="preset-btn" data-preset="0,0,0,0,100,0,100"><img src="images/5.jpg" alt="Preset 5"></button>
         <button id="preset6" class="preset-btn" data-preset="0,0,0,0,0,100,100"><img src="images/6.jpg" alt="Preset 6"></button>        
     </div>
+    <div id="ramp-controls">
+        <label for="ramp-time-slider">Ramp Time (ms):</label>
+        <input type="range" id="ramp-time-slider" min="0" max="1000" value="0" step="1">
+        <span id="ramp-time-value">0 ms</span>
+    </div>    
     <div id="canvas-container">
         <canvas id="audioVisualizerTop" width="500" height="500"></canvas>
         <canvas id="audioVisualizerFront" width="500" height="500"></canvas>

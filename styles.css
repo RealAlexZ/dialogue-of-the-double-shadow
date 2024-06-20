@@ -17,3 +17,7 @@ canvas.dragging {
     width: 50px;
     height: auto;
 }
+
+#ramp-controls {
+    margin-top: 20px;
+}
