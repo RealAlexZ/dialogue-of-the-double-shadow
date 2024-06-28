@@ -1,6 +1,7 @@
 /*--------------------Global Variables--------------------*/
 var masterGainNodeDoubleMaxGain = 0.20;
 var masterGainNodePremiereMaxGain = 0.40;
+var masterGainNodePianoReverbMaxGain = 0.10;
 /*--------------------Global Variables--------------------*/
 
 
@@ -29,16 +30,29 @@ listener.upX.value = 0;
 listener.upY.value = 1;
 listener.upZ.value = 0;
 
-// Load the impulse response for the premiere; upon load, connect it to the audio output
+// Load the impulse responses for the premiere; upon load, connect it to the audio output
 // IR response acquired from http://reverbjs.org/; feel free to switch it to a room reverb that fits the project
-const premiereReverbUrl = "http://reverbjs.org/Library/MidiverbMark2Preset29.m4a";
+// Live clarinet going through a room reverb
+const premiereReverbURL = "http://reverbjs.org/Library/MidiverbMark2Preset29.m4a";
 const premiereReverbNode = audioCtx.createConvolver();
-fetch(premiereReverbUrl)
+fetch(premiereReverbURL)
     .then(response => response.arrayBuffer())
     .then(arraybuffer => audioCtx.decodeAudioData(arraybuffer))
     .then(decodedData => {
         // The reverb node for the premiere is ready and now can be used in the audio routing below
         premiereReverbNode.buffer = decodedData;
+    })
+    .catch(e => console.error("Error loading or decoding reverb file:", e));
+
+// Live clarinet going through a piano reverb
+const pianoReverbURL = "http://reverbjs.org/Library/InsidePiano.m4a";
+const pianoReverbNode = audioCtx.createConvolver();
+fetch(pianoReverbURL)
+    .then(response => response.arrayBuffer())
+    .then(arraybuffer => audioCtx.decodeAudioData(arraybuffer))
+    .then(decodedData => {
+        // The reverb node for the premiere is ready and now can be used in the audio routing below
+        pianoReverbNode.buffer = decodedData;
     })
     .catch(e => console.error("Error loading or decoding reverb file:", e));
 
@@ -66,7 +80,8 @@ const sources = [
     { positionX: posX + 1, positionY: posY, positionZ: posZ + 1.7321 }, // Channel 4
     { positionX: posX - 1, positionY: posY, positionZ: posZ + 1.7321 }, // Channel 5
     { positionX: posX - 2, positionY: posY, positionZ: posZ }, // Channel 6
-    { positionX: posX, positionY: posY, positionZ: posZ - 0.5 } // Channel 7 (premiere)
+    { positionX: posX + 3, positionY: posY, positionZ: posZ - 3}, // Channel 7 (piano reverb)
+    { positionX: posX, positionY: posY, positionZ: posZ - 0.5 } // Channel 8 (premiere)
 ];
 
 // Function to calculate orientation
@@ -119,6 +134,7 @@ const panners = sources.map(source => {
 const gainNodes = sources.map(() => new GainNode(audioCtx));
 const masterGainNodeDouble = new GainNode(audioCtx, { gain: masterGainNodeDoubleMaxGain });
 const masterGainNodePremiere = new GainNode(audioCtx, { gain: masterGainNodePremiereMaxGain });
+const masterGainNodePianoReverb = new GainNode(audioCtx, { gain: masterGainNodePianoReverbMaxGain });
 
 // Set the audio context destination to support the maximum number of output channels
 audioCtx.destination.channelCount = audioCtx.destination.maxChannelCount;
@@ -138,6 +154,8 @@ const trackPremiere = audioCtx.createMediaElementSource(audioElementPremiere);
 panners.forEach((panner, index) => {
     if (index < 6) {
         trackDouble.connect(panner).connect(gainNodes[index]).connect(masterGainNodeDouble).connect(audioCtx.destination);
+    } else if (index < 7) {
+        trackPremiere.connect(panner).connect(pianoReverbNode).connect(gainNodes[index]).connect(masterGainNodePianoReverb).connect(audioCtx.destination);
     } else {
         trackPremiere.connect(panner).connect(premiereReverbNode).connect(gainNodes[index]).connect(masterGainNodePremiere).connect(audioCtx.destination);
     }
@@ -211,6 +229,10 @@ sliders.push(sliderDouble);
 const { container: containerPremiere, slider: sliderPremiere } = createSlider("Premiere Master Volume", masterGainNodePremiere, 0, masterGainNodePremiereMaxGain);
 controlsContainer.appendChild(containerPremiere);
 sliders.push(sliderPremiere);
+
+const { container: containerPianoReverb, slider: sliderPianoReverb } = createSlider("Piano Reverb Master Volume", masterGainNodePianoReverb, 0, masterGainNodePianoReverbMaxGain);
+controlsContainer.appendChild(containerPianoReverb);
+sliders.push(sliderPianoReverb);
 /*--------------------Play/Pause Button and Sliders--------------------*/
 
 
