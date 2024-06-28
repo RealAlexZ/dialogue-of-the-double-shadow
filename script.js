@@ -29,16 +29,16 @@ listener.upX.value = 0;
 listener.upY.value = 1;
 listener.upZ.value = 0;
 
-// Load the impulse response; upon load, connect it to the audio output.
-// IR response acquired from http://reverbjs.org/
-const reverbUrl = "http://reverbjs.org/Library/MidiverbMark2Preset29.m4a";
-const reverbNode = audioCtx.createConvolver();
-fetch(reverbUrl)
+// Load the impulse response for the premiere; upon load, connect it to the audio output
+// IR response acquired from http://reverbjs.org/; feel free to switch it to a room reverb that fits the project
+const premiereReverbUrl = "http://reverbjs.org/Library/MidiverbMark2Preset29.m4a";
+const premiereReverbNode = audioCtx.createConvolver();
+fetch(premiereReverbUrl)
     .then(response => response.arrayBuffer())
     .then(arraybuffer => audioCtx.decodeAudioData(arraybuffer))
     .then(decodedData => {
-        // The reverb node is ready and now can be used in the audio routing below
-        reverbNode.buffer = decodedData;
+        // The reverb node for the premiere is ready and now can be used in the audio routing below
+        premiereReverbNode.buffer = decodedData;
     })
     .catch(e => console.error("Error loading or decoding reverb file:", e));
 
@@ -139,7 +139,7 @@ panners.forEach((panner, index) => {
     if (index < 6) {
         trackDouble.connect(panner).connect(gainNodes[index]).connect(masterGainNodeDouble).connect(audioCtx.destination);
     } else {
-        trackPremiere.connect(panner).connect(reverbNode).connect(gainNodes[index]).connect(masterGainNodePremiere).connect(audioCtx.destination);
+        trackPremiere.connect(panner).connect(premiereReverbNode).connect(gainNodes[index]).connect(masterGainNodePremiere).connect(audioCtx.destination);
     }
 });
 /*--------------------Sound Source Panner Nodes and Effect Chain Setup--------------------*/
