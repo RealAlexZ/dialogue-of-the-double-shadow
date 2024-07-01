@@ -45,9 +45,11 @@ fetch(premiereReverbURL)
     .catch(e => console.error("Error loading or decoding reverb file:", e));
 
 // Live clarinet going through a piano reverb
-const pianoReverbURL = "http://reverbjs.org/Library/InsidePiano.m4a";
+// The following is a piano reverb already available that comes with Reverb JS
+// const pianoReverbURL = "http://reverbjs.org/Library/InsidePiano.m4a";
+const pianoReverbPath = document.getElementById("ir-response");
 const pianoReverbNode = audioCtx.createConvolver();
-fetch(pianoReverbURL)
+fetch(pianoReverbPath.src)
     .then(response => response.arrayBuffer())
     .then(arraybuffer => audioCtx.decodeAudioData(arraybuffer))
     .then(decodedData => {
@@ -136,6 +138,10 @@ const masterGainNodeDouble = new GainNode(audioCtx, { gain: masterGainNodeDouble
 const masterGainNodePremiere = new GainNode(audioCtx, { gain: masterGainNodePremiereMaxGain });
 const masterGainNodePianoReverb = new GainNode(audioCtx, { gain: masterGainNodePianoReverbMaxGain });
 
+// Create GainNodes for dry and wet signals
+const dryGainNode = new GainNode(audioCtx, { gain: 1 });
+const wetGainNode = new GainNode(audioCtx, { gain: 0 });
+
 // Set the audio context destination to support the maximum number of output channels
 audioCtx.destination.channelCount = audioCtx.destination.maxChannelCount;
 console.log(audioCtx.destination.channelCount);
@@ -155,7 +161,9 @@ panners.forEach((panner, index) => {
     if (index < 6) {
         trackDouble.connect(panner).connect(gainNodes[index]).connect(masterGainNodeDouble).connect(audioCtx.destination);
     } else if (index < 7) {
-        trackPremiere.connect(panner).connect(pianoReverbNode).connect(gainNodes[index]).connect(masterGainNodePianoReverb).connect(audioCtx.destination);
+        // trackPremiere.connect(panner).connect(pianoReverbNode).connect(gainNodes[index]).connect(masterGainNodePianoReverb).connect(audioCtx.destination);
+        trackPremiere.connect(panner).connect(dryGainNode).connect(gainNodes[6]).connect(masterGainNodePianoReverb).connect(audioCtx.destination);
+        trackPremiere.connect(panner).connect(pianoReverbNode).connect(wetGainNode).connect(gainNodes[6]).connect(masterGainNodePianoReverb).connect(audioCtx.destination);
     } else {
         trackPremiere.connect(panner).connect(premiereReverbNode).connect(gainNodes[index]).connect(masterGainNodePremiere).connect(audioCtx.destination);
     }
@@ -212,6 +220,38 @@ function createSlider(labelText, gainNode, min = 0., max = 1.) {
     return { container, slider };  // Return both the container and the slider
 }
 
+// Create a function to handle dry/wet balance
+function setDryWetBalance(wetAmount) {
+    const dryAmount = 1 - wetAmount;
+    dryGainNode.gain.value = dryAmount;
+    wetGainNode.gain.value = wetAmount;
+}
+
+// Create the dry/wet slider
+function createDryWetSlider() {
+    const container = document.createElement("div");
+    const label = document.createElement("label");
+    label.textContent = "Piano Reverb Dry/Wet";
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = 0;
+    slider.max = 1;
+    slider.step = 0.01;
+    slider.value = 1; // Start with fully dry
+    slider.addEventListener("input", () => {
+        const wetAmount = parseFloat(slider.value);
+        setDryWetBalance(wetAmount);
+        drawVisualizationTop();
+        drawVisualizationFront();
+    });
+    container.appendChild(label);
+    container.appendChild(slider);
+    return { container, slider };
+}
+
+// Initialize the dry/wet balance
+setDryWetBalance(1); // Start with fully wet
+
 // Create sliders for each GainNode and the master GainNode
 const controlsContainer = document.getElementById("controls");
 const sliders = [];  // Array to hold references to slider elements
@@ -233,6 +273,11 @@ sliders.push(sliderPremiere);
 const { container: containerPianoReverb, slider: sliderPianoReverb } = createSlider("Piano Reverb Master Volume", masterGainNodePianoReverb, 0, masterGainNodePianoReverbMaxGain);
 controlsContainer.appendChild(containerPianoReverb);
 sliders.push(sliderPianoReverb);
+
+// Add the dry/wet slider to the controls
+const { container: containerDryWet, slider: sliderDryWet } = createDryWetSlider();
+controlsContainer.appendChild(containerDryWet);
+sliders.push(sliderDryWet);
 /*--------------------Play/Pause Button and Sliders--------------------*/
 
 
@@ -279,7 +324,6 @@ function setVolumes(volumes) {
 
     rampVolume();
 }
-
 
 document.addEventListener('keydown', function(event) {
     if (event.key >= '1' && event.key <= '6') {

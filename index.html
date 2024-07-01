@@ -12,6 +12,11 @@
     <audio id="ir-response" src="ir-response/ir-test-jun27.mp3"></audio>
     <button data-playing="false" role="switch">Play/Pause</button>
     <div id="controls"></div>
+    <div id="ramp-controls">
+        <label for="ramp-time-slider">Ramp Time (ms):</label>
+        <input type="range" id="ramp-time-slider" min="0" max="250" value="0" step="1">
+        <span id="ramp-time-value">0 ms</span>
+    </div>
     <div id="preset-controls">
         <button id="preset1" class="preset-btn" data-preset="100,0,0,0,0,0,100,100"><img src="images/1.jpg" alt="Preset 1"></button>
         <button id="preset2" class="preset-btn" data-preset="0,100,0,0,0,0,100,100"><img src="images/2.jpg" alt="Preset 2"></button>
@@ -20,11 +25,6 @@
         <button id="preset5" class="preset-btn" data-preset="0,0,0,0,100,0,100,100"><img src="images/5.jpg" alt="Preset 5"></button>
         <button id="preset6" class="preset-btn" data-preset="0,0,0,0,0,100,100,100"><img src="images/6.jpg" alt="Preset 6"></button>        
     </div>
-    <div id="ramp-controls">
-        <label for="ramp-time-slider">Ramp Time (ms):</label>
-        <input type="range" id="ramp-time-slider" min="0" max="250" value="0" step="1">
-        <span id="ramp-time-value">0 ms</span>
-    </div>    
     <div id="canvas-container">
         <canvas id="audioVisualizerTop" width="500" height="500"></canvas>
         <canvas id="audioVisualizerFront" width="500" height="500"></canvas>
