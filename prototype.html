@@ -1,4 +1,7 @@
-<html><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <title>Timestamp Image Player</title>
 <style>
   body {
@@ -58,30 +61,11 @@
     max-height: 200px;
     border-radius: 5px;
   }
-  .upload-container {
-    margin-top: 20px;
-  }
-  .upload-container input[type="file"] {
-    margin-bottom: 10px;
-  }
-  button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
 </style>
 </head>
 <body>
   <div class="player-container">
-    <audio id="audioPlayer" controls>
+    <audio id="audioPlayer" controls src="audio/sigle-initial-wet.mp3">
       Your browser does not support the audio element.
     </audio>
     <div id="progressContainer">
@@ -89,16 +73,7 @@
       <div id="progressHandle"></div>
     </div>
     <div id="imageContainer">
-      <img id="currentImage" src="" alt="Timestamp Image">
-    </div>
-    <div class="upload-container">
-      <input type="file" id="audioUpload" accept="audio/*">
-      <button id="uploadAudioButton">Upload Audio</button>
-    </div>
-    <div class="upload-container">
-      <input type="file" id="image1Upload" accept="image/*">
-      <input type="file" id="image2Upload" accept="image/*">
-      <button id="uploadImagesButton">Upload Images</button>
+      <img id="currentImage" src="images/1.jpg" alt="Timestamp Image">
     </div>
   </div>
 
@@ -108,14 +83,9 @@
     const progressBar = document.getElementById('progressBar');
     const progressHandle = document.getElementById('progressHandle');
     const currentImage = document.getElementById('currentImage');
-    const audioUpload = document.getElementById('audioUpload');
-    const uploadAudioButton = document.getElementById('uploadAudioButton');
-    const image1Upload = document.getElementById('image1Upload');
-    const image2Upload = document.getElementById('image2Upload');
-    const uploadImagesButton = document.getElementById('uploadImagesButton');
 
-    const timestamps = [0, 1.483]; // in seconds
-    let images = ['', ''];
+    const timestamps = [0, 1.483, 3.311, 4.590, 7.863, 11.365]; // in seconds
+    let images = ['images/1.jpg', 'images/2.jpg', 'images/3.jpg', 'images/4.jpg', 'images/5.jpg', 'images/6.jpg'];
 
     let isDragging = false;
 
@@ -134,14 +104,14 @@
     function updateImage() {
       const currentTime = audioPlayer.currentTime;
       let imageIndex = 0;
-      
+
       for (let i = timestamps.length - 1; i >= 0; i--) {
         if (currentTime >= timestamps[i]) {
           imageIndex = i;
           break;
         }
       }
-      
+
       currentImage.src = images[imageIndex];
     }
 
@@ -165,24 +135,6 @@
     document.addEventListener('mouseup', () => {
       isDragging = false;
     });
-
-    uploadAudioButton.addEventListener('click', () => {
-      const file = audioUpload.files[0];
-      if (file) {
-        const objectURL = URL.createObjectURL(file);
-        audioPlayer.src = objectURL;
-      }
-    });
-
-    uploadImagesButton.addEventListener('click', () => {
-      const file1 = image1Upload.files[0];
-      const file2 = image2Upload.files[0];
-      
-      if (file1 && file2) {
-        images[0] = URL.createObjectURL(file1);
-        images[1] = URL.createObjectURL(file2);
-        currentImage.src = images[0];
-      }
-    });
   </script>
-</body></html>
+</body>
+</html>
