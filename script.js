@@ -521,5 +521,4 @@ canvasFront.addEventListener('mouseout', onMouseUp);
 
 drawVisualizationTop();
 drawVisualizationFront();
-
 // /*--------------------Canvas Display of Sound Source Positions--------------------*/

@@ -1,0 +1,200 @@
+<html>
+  <head>
+    <title>WebSim Audio Player</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+  }
+  .player-container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+  }
+  .image-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border-radius: 5px;
+  }
+  .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .play-pause {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .progress-container {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .progress-bar {
+    width: 0;
+    height: 10px;
+    background-color: #4CAF50;
+    border-radius: 5px;
+    transition: width 0.1s linear;
+  }
+  .time-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+  }
+</style></head>
+<body>
+<div class="player-container">
+  <div class="image-container">
+    <img id="album-art" src="https://picsum.photos/300/200?random=1" alt="Album Art">
+  </div>
+  <div class="controls">
+    <button class="play-pause" id="playPauseBtn">Play</button>
+  </div>
+  <div class="progress-container" id="progressContainer">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="time-display">
+    <span id="currentTime">0:00</span>
+    <span id="duration">0:00</span>
+  </div>
+  <audio id="audio" src="audio/sigle-initial-wet.mp3"></audio>
+</div>
+
+<script>
+  const audio = document.getElementById('audio');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const progressBar = document.getElementById('progressBar');
+  const progressContainer = document.getElementById('progressContainer');
+  const currentTimeDisplay = document.getElementById('currentTime');
+  const durationDisplay = document.getElementById('duration');
+  const albumArt = document.getElementById('album-art');
+
+  const images = [
+    'https://picsum.photos/300/200?random=1',
+    'https://picsum.photos/300/200?random=2',
+    'https://picsum.photos/300/200?random=3',
+    'https://picsum.photos/300/200?random=4',
+    'https://picsum.photos/300/200?random=5',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+    'https://picsum.photos/300/200?random=6',
+  ];
+
+  let currentImageIndex = 0;
+
+  function updateAlbumArt() {
+    albumArt.src = images[currentImageIndex];
+    currentImageIndex = (currentImageIndex + 1) % images.length;
+  }
+
+  playPauseBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+      playPauseBtn.textContent = 'Pause';
+    } else {
+      audio.pause();
+      playPauseBtn.textContent = 'Play';
+    }
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    const progress = (audio.currentTime / audio.duration) * 100;
+    progressBar.style.width = `${progress}%`;
+    currentTimeDisplay.textContent = formatTime(audio.currentTime);
+  });
+
+  audio.addEventListener('loadedmetadata', () => {
+    durationDisplay.textContent = formatTime(audio.duration);
+  });
+
+  progressContainer.addEventListener('click', (e) => {
+    const clickPosition = e.offsetX / progressContainer.offsetWidth;
+    audio.currentTime = clickPosition * audio.duration;
+  });
+
+  function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  // Change image every 5 seconds
+  setInterval(updateAlbumArt, 5000);
+
+  // Add drag functionality to progress bar
+  let isDragging = false;
+
+  progressContainer.addEventListener('mousedown', () => {
+    isDragging = true;
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      const rect = progressContainer.getBoundingClientRect();
+      const clickPosition = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = clickPosition * audio.duration;
+    }
+  });
+</script>
+</body></html>
